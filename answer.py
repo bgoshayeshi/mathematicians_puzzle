@@ -22,16 +22,6 @@ def find_factors(n):
     return factors
             
 def is_prime(n):
-    """
-    Check if a number is prime.
-
-    Args:
-        n: The number to check.
-
-    Returns:
-        True if the number is prime, False otherwise.
-    """
-    # No numbers less than 2 are prime.
     if n < 2:
         return False
     
@@ -43,15 +33,6 @@ def is_prime(n):
     return True
         
 def is_not_prime_cube(num):
-    """
-    Check if a number is not a prime or a cube of a prime.
-    
-    Args:
-        num: The number to check.
-        
-    Returns:
-        True if the number is not a prime or a cube of a prime, False otherwise.
-    """
     # If the number itself is prime, add it to the set and return False.
     if is_prime(num):
         prime_set.add(num)
@@ -69,7 +50,6 @@ def is_not_prime_cube(num):
         prime_set.add(int(cube))
         return False
 
-    # Find the factors of the number.
     factors = find_factors(num)
 
     # Check if each pair of factors are both prime.
@@ -80,8 +60,6 @@ def is_not_prime_cube(num):
             prime_set.add(fact[0])
             prime_set.add(fact[1])
             return False
-
-    # If none of the conditions are met, return True.
     return True
 
 
