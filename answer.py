@@ -1,15 +1,27 @@
-prime_list = set()
+# We will use a set to store primes for efficiency.
+# This allows O(1) lookups, making it faster to check if a number is prime.
+prime_set = set()
 
-
-def FindFact(n):
+def find_factors(n):
+    """
+    Find all factors of a number.
+    
+    Args:
+        n: The number to find factors of.
+        
+    Returns:
+        A list of tuples, each containing a pair of factors.
+    """
     factors = []
-    for i in range(2, int(n/2)+1):
+    
+    # The largest factor of n is at most sqrt(n),
+    # so we only need to iterate up to that point.
+    for i in range(2, int(n**0.5) + 1):
         if n % i == 0:
-           factors.append((i, n/i))
+            factors.append((i, n//i))
     return factors
             
-           
-def prime(n):
+def is_prime(n):
     """
     Check if a number is prime.
 
@@ -19,85 +31,103 @@ def prime(n):
     Returns:
         True if the number is prime, False otherwise.
     """
+    # No numbers less than 2 are prime.
     if n < 2:
         return False
+    
+    # The largest factor of n is at most sqrt(n),
+    # so we only need to check up to that point.
     for i in range(2, int(n**0.5) + 1):
         if n % i == 0:
             return False
     return True
-
-
-
-def s_knew(num,p_cannot_list):
-    pairs = []
-    for i in range(2,int(num/2)+1):
-        if (i*(num-i) in p_cannot_list):
-            pairs.append((i, num-i))
-            continue
-        else: 
-            return False
-    return pairs
         
-
-def p_cannot(num):
-    if prime(num):
-        prime_list.add(num)
-        return False
-    squre = num**(0.5)
-    if squre == int(squre) and prime(squre):
-        prime_list.add(squre)
-        return False
-
-    cube = num**(1./3.)
-    if cube == int(cube) and prime(cube):
-        prime_list.add(cube)
-        return False
-   
-    factors = FindFact(num)
+def is_not_prime_cube(num):
+    """
+    Check if a number is not a prime or a cube of a prime.
     
+    Args:
+        num: The number to check.
+        
+    Returns:
+        True if the number is not a prime or a cube of a prime, False otherwise.
+    """
+    # If the number itself is prime, add it to the set and return False.
+    if is_prime(num):
+        prime_set.add(num)
+        return False
+
+    # Check if the number is a square of a prime.
+    square = num**0.5
+    if square == int(square) and is_prime(int(square)):
+        prime_set.add(int(square))
+        return False
+
+    # Check if the number is a cube of a prime.
+    cube = num**(1./3.)
+    if cube == int(cube) and is_prime(int(cube)):
+        prime_set.add(int(cube))
+        return False
+
+    # Find the factors of the number.
+    factors = find_factors(num)
+
+    # Check if each pair of factors are both prime.
     for fact in factors:
-        if (fact[0] in prime_list) and (fact[1] in prime_list):
+        if (fact[0] in prime_set) and (fact[1] in prime_set):
             return False
-        if prime(fact[0]) and prime(fact[1]):
-            prime_list.add(fact[0])
-            prime_list.add(fact[1])
+        if is_prime(fact[0]) and is_prime(fact[1]):
+            prime_set.add(fact[0])
+            prime_set.add(fact[1])
             return False
+
+    # If none of the conditions are met, return True.
     return True
 
-def p_s_determine_list(the_list, key):
-    p_unique = {}
-    p_iter = set()
+
+def find_valid_combinations(num, p_list):
+   
+    valid_pairs = []
+
+    for i in range(2, int(num/2) + 1):
+        if i * (num - i) in p_list:
+            valid_pairs.append((i, num - i))
+        else: 
+            return False
+    return valid_pairs
+
+
+def only_one_combination(the_list, key):
+    unique_key = {}
+    key_iter = set()
     for pair in the_list:
         product = pair[key]
-        if product in p_iter:
+        if product in key_iter:
             continue
-        if product in p_unique:
-            p_iter.add(product)
-            p_unique.pop(product)
+        if product in unique_key:
+            key_iter.add(product)
+            unique_key.pop(product)
             continue
-        p_unique[product] = pair
+        unique_key[product] = pair
 
-    return [p_unique[key] for key in p_unique]
+    return [unique_key[key] for key in unique_key]
 
+p_list = []
+s_list = []
+for i in range(4,2500):
+    if is_not_prime_cube(i):
+        p_list.append(i)
 
+for i in range(6,100):
+    pairs = find_valid_combinations(i, p_list)
+    if pairs:
+        for pair in pairs: 
+            s_list.append({'x': pair[0], 'y': pair[1], 's': pair[0]+pair[1], 'p': pair[0]*pair[1]})
 
-if __name__ == '__main__': 
-    p_list = []
-    s_list = []
-    for i in range(4,2500):
-        if p_cannot(i):
-            p_list.append(i)
-    
-    for i in range(6,100):
-        pairs = s_knew(i, p_list)
-        if pairs:
-            for pair in pairs: 
-                s_list.append({'x': pair[0], 'y': pair[1], 's': pair[0]+pair[1], 'p': pair[0]*pair[1]})
-     
-    # print("------------------------------------")
-    p_d = p_s_determine_list(s_list, 'p')
-    print(p_d)
-    s_d = p_s_determine_list(p_d, 's')
+import pandas as pd
 
-    print("Adn the answer is: ")
-    print(s_d)
+p_d = only_one_combination(s_list, 'p')
+
+s_d = only_one_combination(p_d, 's')
+print("The answer is: ")
+print(s_d)
